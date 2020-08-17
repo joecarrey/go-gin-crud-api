@@ -19,6 +19,27 @@ type Post struct {
 	AuthorID  uuid.UUID `json:"author"`
 }
 
+func GetAllPosts(conn *pgx.Conn) ([]Post, error) {
+	rows, err := conn.Query(context.Background(), "SELECT id, title, body, author_id FROM post")
+	if err != nil {
+		fmt.Println(err)
+		return nil, fmt.Errorf("Error getting posts")
+	}
+
+	var posts []Post
+	for rows.Next() {
+		post := Post{}
+		err = rows.Scan(&post.ID, &post.Title, &post.Body, &post.AuthorID)
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+		posts = append(posts, post)
+	}
+
+	return posts, nil
+}
+
 func (i *Post) Create(conn *pgx.Conn, userID string) error {
 	i.Title = strings.Trim(i.Title, " ")
 	if len(i.Title) < 1 {
@@ -41,25 +62,15 @@ func (i *Post) Create(conn *pgx.Conn, userID string) error {
 	return nil
 }
 
-func GetAllPosts(conn *pgx.Conn) ([]Post, error) {
-	rows, err := conn.Query(context.Background(), "SELECT id, title, body, author_id FROM post")
+func GetPostByID(postID string, conn *pgx.Conn) (Post, error) {
+	row := conn.QueryRow(context.Background(), "SELECT id, title, body, author_id FROM post WHERE id=$1", postID)
+	post := Post{}
+	err := row.Scan(&post.ID, &post.Title, &post.Body, &post.AuthorID)
 	if err != nil {
-		fmt.Println(err)
-		return nil, fmt.Errorf("Error getting posts")
+		return post, fmt.Errorf("The post not found")
 	}
 
-	var posts []Post
-	for rows.Next() {
-		post := Post{}
-		err = rows.Scan(&post.ID, &post.Title, &post.Body, &post.AuthorID)
-		if err != nil {
-			fmt.Println(err)
-			continue
-		}
-		posts = append(posts, post)
-	}
-
-	return posts, nil
+	return post, nil
 }
 
 func GetPostsByCurrentUser(userID string, conn *pgx.Conn) ([]Post, error) {
@@ -102,15 +113,12 @@ func (i *Post) Update(conn *pgx.Conn) error {
 	return nil
 }
 
-func FindPostById(id uuid.UUID, conn *pgx.Conn) (Post, error) {
-	row := conn.QueryRow(context.Background(), "SELECT title, body, author_id FROM post WHERE id=$1", id)
-	post := Post{
-		ID: id,
-	}
-	err := row.Scan(&post.Title, &post.Body, &post.AuthorID)
+func Delete(postID string, conn *pgx.Conn) error {
+	_, err := conn.Query(context.Background(), "DELETE FROM post WHERE id=$1", postID)
 	if err != nil {
-		return post, fmt.Errorf("The post doesn't exist")
+		fmt.Printf("Error getting posts %v", err)
+		return fmt.Errorf("There was an error getting the posts")
 	}
 
-	return post, nil
+	return nil
 }

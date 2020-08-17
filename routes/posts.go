@@ -19,6 +19,20 @@ func PostsIndex(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"posts": posts})
 }
 
+func PostByID(c *gin.Context) {
+	postID := c.Param("id")
+	db, _ := c.Get("db")
+	conn := db.(pgx.Conn)
+
+	posts, err := models.GetPostByID(postID, &conn)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"posts": posts})
+}
+
 func PostsCreate(c *gin.Context) {
 	userID := c.GetString("user_id")
 	db, _ := c.Get("db")
@@ -62,7 +76,7 @@ func PostsUpdate(c *gin.Context) {
 		return
 	}
 
-	postBeingUpdated, err := models.FindPostById(postSent.ID, &conn)
+	postBeingUpdated, err := models.GetPostByID(postSent.ID.String(), &conn)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -80,4 +94,29 @@ func PostsUpdate(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"post": postSent})
+}
+
+func PostsDelete(c *gin.Context) {
+	userID := c.GetString("user_id")
+	postID := c.Param("id")
+	db, _ := c.Get("db")
+	conn := db.(pgx.Conn)
+
+	postBeingDeleted, err := models.GetPostByID(postID, &conn)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if postBeingDeleted.AuthorID.String() != userID {
+		c.JSON(http.StatusForbidden, gin.H{"error": "You are not authorized to delete this post"})
+		return
+	}
+
+	errDel := models.Delete(postID, &conn)
+	if errDel != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"posts": postBeingDeleted, "message": "The post has been deleted"})
 }

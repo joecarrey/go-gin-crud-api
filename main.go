@@ -14,32 +14,38 @@ import (
 
 func main() {
 
-	conn, err := connectDB()
+	conn, err := connectDB() // connect to database
 	if err != nil {
 		return
 	}
 
-	router := gin.Default()
+	router := gin.Default() // creates a gin router with default middleware
 
-	router.Use(dbMiddleware(*conn))
+	router.Use(dbMiddleware(*conn)) // use middleware in dbMiddleware
 
-	usersGroup := router.Group("users")
+	usersGroup := router.Group("users") // group of routers
 	{
 		usersGroup.POST("register", routes.UsersRegister)
 		usersGroup.POST("login", routes.UsersLogin)
 	}
 
-	postsGroup := router.Group("posts")
+	postsGroup := router.Group("posts") // group of routers
 	{
 		postsGroup.GET("index", routes.PostsIndex)
+		postsGroup.GET("index/:id", routes.PostByID)
 		postsGroup.POST("create", authMiddleWare(), routes.PostsCreate)
 		postsGroup.GET("myposts", authMiddleWare(), routes.PostsByCurrentUser)
 		postsGroup.PUT("update", authMiddleWare(), routes.PostsUpdate)
+		postsGroup.DELETE("delete/:id", authMiddleWare(), routes.PostsDelete)
 	}
 
 	router.Run(":3000")
 }
 
+/*
+	Function to connect the database using pgx/v4
+	returns: pgx.Conn, error
+*/
 func connectDB() (c *pgx.Conn, err error) {
 	conn, err := pgx.Connect(context.Background(), "postgresql://postgres:password@localhost:5432/goBlog")
 	if err != nil {
@@ -50,6 +56,9 @@ func connectDB() (c *pgx.Conn, err error) {
 	return conn, err
 }
 
+/*
+	Handler function to name the connection
+*/
 func dbMiddleware(conn pgx.Conn) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Set("db", conn)
@@ -57,6 +66,10 @@ func dbMiddleware(conn pgx.Conn) gin.HandlerFunc {
 	}
 }
 
+/*
+	Handler function to check Authorization Header
+	Bearer token validation
+*/
 func authMiddleWare() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		bearer := c.Request.Header.Get("Authorization")
