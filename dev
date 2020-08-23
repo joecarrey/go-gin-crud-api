@@ -1,5 +1,3 @@
 #!/bin/bash
 
-export TOKEN_SECRET="eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4"
-
 go run main.go

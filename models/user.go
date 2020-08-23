@@ -11,10 +11,12 @@ import (
 	"github.com/gofrs/uuid"
 	"github.com/jackc/pgx/v4"
 	"golang.org/x/crypto/bcrypt"
+	// "github.com/joho/godotenv"
 )
 
 var (
-	tokenSecret = []byte(os.Getenv("TOKEN_SECRET"))
+	tokenSecretTemp, _ = os.LookupEnv("TOKEN_SECRET")
+	tokenSecret = []byte(tokenSecretTemp)
 )
 
 type User struct {
