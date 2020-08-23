@@ -1,4 +1,5 @@
 #### Run the project in cmd(in project folder): ./dev
+     The app will run in port :3000
 
 #### Routes:
 _______________________________________________________________________________

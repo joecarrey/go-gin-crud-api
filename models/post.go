@@ -12,8 +12,8 @@ import (
 
 type Post struct {
 	ID        uuid.UUID `json:"id"`
-	CreatedAt time.Time `json:"_"`
-	UpdatedAt time.Time `json:"_"`
+	CreatedAt time.Time `json:"-"`
+	UpdatedAt time.Time `json:"-"`
 	Title     string    `json:"title"`
 	Body      string    `json:"body"`
 	AuthorID  uuid.UUID `json:"author"`

@@ -30,7 +30,7 @@ func PostByID(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"posts": posts})
+	c.JSON(http.StatusOK, posts)
 }
 
 func PostsCreate(c *gin.Context) {
@@ -93,7 +93,7 @@ func PostsUpdate(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"post": postSent})
+	c.JSON(http.StatusOK, postSent)
 }
 
 func PostsDelete(c *gin.Context) {
@@ -118,5 +118,5 @@ func PostsDelete(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"posts": postBeingDeleted, "message": "The post has been deleted"})
+	c.JSON(http.StatusOK, gin.H{"post": postBeingDeleted, "message": "The post has been deleted"})
 }

@@ -3,14 +3,25 @@ package main
 import (
 	"context"
 	"fmt"
+	"os"
+	"log"
+
 	"go-gin-crud-api/models"
 	"go-gin-crud-api/routes"
 	"net/http"
 	"strings"
 
+	"github.com/joho/godotenv"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v4"
 )
+
+func init() {
+    // loads values from .env into the system
+    if err := godotenv.Load(); err != nil {
+        log.Print("No .env file found")
+    }
+}
 
 func main() {
 
@@ -47,7 +58,8 @@ func main() {
 	returns: pgx.Conn, error
 */
 func connectDB() (c *pgx.Conn, err error) {
-	conn, err := pgx.Connect(context.Background(), "postgresql://postgres:password@localhost:5432/goBlog")
+	database_url, _ := os.LookupEnv("DATABASE_URL")
+	conn, err := pgx.Connect(context.Background(), database_url)
 	if err != nil {
 		fmt.Println("Unable to connect to database")
 		fmt.Println(err.Error())
